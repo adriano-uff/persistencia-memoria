@@ -2,11 +2,13 @@ import socket
 import time
 import os
 
-my_number = "0"
+MY_NUMBER = "0"
 
 def limpaTela():
     
     os.system('cls' if os.name == 'nt' else 'clear')
+
+    return None
 
 def receive_table(client_socket):
     
@@ -30,11 +32,10 @@ def receive_round(client_socket):
 
 def receive_player_number(client_socket):
 
-    global my_number
+    global MY_NUMBER
 
     data = client_socket.recv(512).rstrip()
-    my_number = data.decode('utf-8')
-    print('Eu sou o jogador: ', my_number)
+    MY_NUMBER = data.decode('utf-8')
     
     return None
 
@@ -58,7 +59,6 @@ def client_choose_card(client_socket, pos):
         
     while(1):    
 
-        print('mostrar tabela')
         receive_table(client_socket)
 
         play = input(f'Digite a coordenada da {pos} peça: ')
@@ -67,13 +67,13 @@ def client_choose_card(client_socket, pos):
         play_ack = client_socket.recv(512).rstrip()
         
         if(play_ack == b'ok'):    
-            print('Coordenada enviada com sucesso!')
             break
 
         elif(play_ack == b'no'):
             message = client_socket.recv(512).rstrip()
             print(message.decode('utf-8'))
             input("Pressione <enter> para continuar...")
+            print()
 
     return play
 
@@ -95,8 +95,6 @@ def client_play(client_socket):
 
         my_turn = receive_round(client_socket)
 
-        print('É a minha vez ?: ', my_turn)
-
         if(my_turn == 'turn'):
 
             pecasX = client_choose_card(client_socket, "1º")
@@ -104,14 +102,14 @@ def client_play(client_socket):
 
             receive_table(client_socket)
             
-            print(f'Pecas escolhidas --> ({pecasX.split()[0]}, {pecasX.split()[1]}) e ({pecasY.split()[0]}, {pecasY.split()[1]})\n')
+            print(f'Peças escolhidas --> ({pecasX.split()[0]}, {pecasX.split()[1]}) e ({pecasY.split()[0]}, {pecasY.split()[1]})\n')
 
             point = client_socket.recv(512).rstrip()
             
             if(point == b'hit'):
-                print('Pecas casam! Ponto para o jogador: ', my_number)
+                print('Peças casam! Ponto para o jogador: ', MY_NUMBER)
             elif(point == b'miss'):
-                print('Pecas não casam!')
+                print('Peças não casam!')
 
             time.sleep(2)
             continue
@@ -129,7 +127,7 @@ def client_play(client_socket):
             break
 
     receive_winner(client_socket)
-    print('Fim de jogo! ###')
+    print('Fim de jogo!')
 
     client_socket.close()
     
@@ -149,7 +147,6 @@ def main():
 
         if(response == 'Conexão aceita!'.encode('utf-8')):
             client_play(client_socket)
-            #fim do jogo, ver vencedores
         
         client_socket.close()
 
